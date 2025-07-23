@@ -5,13 +5,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { excelDateToString } from "@/lib/utils";
 
+type SheetRow = (string | number | boolean | null | undefined)[];
+type SheetData = SheetRow[];
+
 export interface UploadedFile {
   file: File;
   id: string;
   status: "uploading" | "success" | "error";
   error?: string;
   data?: {
-    sheets: { [key: string]: any[][] };
+    sheets: { [key: string]: SheetData };
     sheetNames: string[];
   };
 }
@@ -57,7 +60,7 @@ export default function FileList({
     }
   };
 
-  const renderPreviewTable = (data: any[][], maxRows = 10) => {
+  const renderPreviewTable = (data: SheetData, maxRows = 10) => {
     if (!data || data.length === 0) {
       return (
         <p className="text-gray-500 text-center py-4">No data to preview</p>
@@ -72,20 +75,25 @@ export default function FileList({
         <table className="min-w-full divide-y divide-gray-200 text-sm">
           <thead className="bg-gray-50">
             <tr>
-              {headers.map((header: any, index: number) => (
-                <th
-                  key={index}
-                  className="px-4 py-2 text-left text-gray-600 font-medium text-ellipsis max-w-[200px] whitespace-nowrap overflow-hidden"
-                >
-                  {header || `Column ${index + 1}`}
-                </th>
-              ))}
+              {headers.map(
+                (
+                  header: string | number | boolean | null | undefined,
+                  index: number
+                ) => (
+                  <th
+                    key={index}
+                    className="px-4 py-2 text-left text-gray-600 font-medium text-ellipsis max-w-[200px] whitespace-nowrap overflow-hidden"
+                  >
+                    {header || `Column ${index + 1}`}
+                  </th>
+                )
+              )}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {rows.map((row: any[], rowIndex: number) => (
+            {rows.map((row: SheetRow, rowIndex: number) => (
               <tr key={rowIndex}>
-                {headers.map((_: any, colIndex: number) => (
+                {headers.map((_, colIndex: number) => (
                   <td
                     key={colIndex}
                     className="px-4 py-1 text-sm text-gray-900 whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]"

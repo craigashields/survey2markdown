@@ -72,4 +72,4 @@ Visit: http://localhost:3000
 
 ## 📄 License
 
-[MIT](https://github.com/craigashields/survey2markdown/blob/main/LICENSE) © [Craig Shields](https://github.com/craigashields)
+[MIT](https://github.com/craigashields/survey2markdown/blob/master/LICENSE) © [Craig Shields](https://github.com/craigashields)

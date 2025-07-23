@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 import UploadArea from "./UploadArea";
 import FileList, { UploadedFile } from "./FileList";
 import MarkdownOutput, { MarkdownOutput as Output } from "./MarkdownOutput";
 import { convertToMarkdown } from "@/lib/markdown";
 import * as XLSX from "xlsx";
 
+type SheetRow = (string | number | boolean | null | undefined)[];
+type SheetData = SheetRow[];
+
 export default function XlsxDragDrop() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [previewFile, setPreviewFile] = useState<string | null>(null);
   const [selectedSheet, setSelectedSheet] = useState<string>("");
@@ -57,11 +59,11 @@ export default function XlsxDragDrop() {
           const data = new Uint8Array(reader.result as ArrayBuffer);
           const workbook = XLSX.read(data, { type: "array" });
 
-          const sheets: { [key: string]: any[][] } = {};
+          const sheets: { [key: string]: SheetData } = {};
           workbook.SheetNames.forEach((sheetName) => {
             const worksheet = workbook.Sheets[sheetName];
             const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-            sheets[sheetName] = jsonData as any[][];
+            sheets[sheetName] = jsonData as SheetData;
           });
 
           resolve({
@@ -132,71 +134,6 @@ export default function XlsxDragDrop() {
 
     await Promise.all(active);
   };
-
-  // const processFiles = useCallback((files: FileList | File[]) => {
-  //   const fileArray = Array.from(files);
-
-  //   fileArray.forEach((file) => {
-  //     const id = Math.random().toString(36).substr(2, 9);
-  //     const error = validateFile(file);
-
-  //     const uploadedFile: UploadedFile = {
-  //       file,
-  //       id,
-  //       status: error ? "error" : "uploading",
-  //       error: error ?? undefined,
-  //     };
-
-  //     setUploadedFiles((prev) => [...prev, uploadedFile]);
-
-  //     if (!error) {
-  //       const reader = new FileReader();
-  //       reader.onload = (e) => {
-  //         try {
-  //           const data = new Uint8Array(e.target?.result as ArrayBuffer);
-  //           const workbook = XLSX.read(data, { type: "array" });
-
-  //           const sheets: { [key: string]: any[][] } = {};
-  //           workbook.SheetNames.forEach((sheetName) => {
-  //             const worksheet = workbook.Sheets[sheetName];
-  //             const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-  //               header: 1,
-  //             });
-  //             sheets[sheetName] = jsonData as any[][];
-  //           });
-
-  //           setUploadedFiles((prev) =>
-  //             prev.map((f) =>
-  //               f.id === id
-  //                 ? {
-  //                     ...f,
-  //                     status: "success",
-  //                     data: {
-  //                       sheets,
-  //                       sheetNames: workbook.SheetNames,
-  //                     },
-  //                   }
-  //                 : f
-  //             )
-  //           );
-  //         } catch {
-  //           setUploadedFiles((prev) =>
-  //             prev.map((f) =>
-  //               f.id === id
-  //                 ? {
-  //                     ...f,
-  //                     status: "error",
-  //                     error: "Failed to parse Excel file",
-  //                   }
-  //                 : f
-  //             )
-  //           );
-  //         }
-  //       };
-  //       reader.readAsArrayBuffer(file);
-  //     }
-  //   });
-  // }, []);
 
   const removeFile = useCallback(
     (id: string) => {

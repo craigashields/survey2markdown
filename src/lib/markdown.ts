@@ -6,10 +6,13 @@ export interface UploadedFile {
   status: "uploading" | "success" | "error";
   error?: string;
   data?: {
-    sheets: { [key: string]: any[][] };
+    sheets: { [key: string]: SheetData };
     sheetNames: string[];
   };
 }
+
+type SheetRow = (string | number | boolean | null | undefined)[];
+type SheetData = SheetRow[];
 
 export interface MarkdownOutput {
   filename: string;
@@ -41,23 +44,24 @@ export function convertSingleFileToMarkdown(file: UploadedFile): string {
           markdown += `### Participant ${participantIndex + 1}\n\n`;
 
           questions.forEach((question, questionIndex) => {
-            if (question && question.trim()) {
+            const questionStr = String(question || "").trim();
+            if (questionStr) {
               const answer = response[questionIndex];
               let formattedAnswer = "*No response*";
+
               if (answer !== undefined && answer !== null && answer !== "") {
                 if (
                   typeof answer === "number" &&
                   answer > 20000 &&
                   answer < 60000
                 ) {
-                  // Likely an Excel date serial
                   formattedAnswer = excelDateToString(answer);
                 } else {
                   formattedAnswer = String(answer).trim();
                 }
               }
 
-              markdown += `**${question.trim()}**: ${formattedAnswer}\n\n`;
+              markdown += `**${questionStr}**: ${formattedAnswer}\n\n`;
             }
           });
         });
